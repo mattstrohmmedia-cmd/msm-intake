@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Intake — Matt Strohm Media</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0e0e0e;
+    --bg2:      #151515;
+    --bg3:      #1c1c1c;
+    --border:   #2a2a2a;
+    --gold:     #c9a84c;
+    --gold-lt:  #e2c47a;
+    --gold-dk:  #8a6c2a;
+    --white:    #ffffff;
+    --off:      #e8e8e8;
+    --muted:    #888888;
+    --faint:    #444444;
+    --error:    #e05555;
+    --success:  #4caf82;
+    --radius:   6px;
+    --transition: 0.2s ease;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--off);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ── GOLD EDGE ── */
+  body::after {
+    content: '';
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--gold);
+    z-index: 100;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    position: relative;
+    padding: 60px 0 50px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-inner {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .logo-wrap {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+    background: #111;
+  }
+
+  .logo-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .header-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+
+  .header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 6vw, 54px);
+    font-weight: 300;
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  .header h1 em {
+    font-style: italic;
+    color: var(--gold-lt);
+  }
+
+  .header p {
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 440px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+  }
+
+  .progress-inner {
+    max-width: 680px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .progress-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  /* ── FORM LAYOUT ── */
+  .form-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    padding: 48px 0 0;
+    display: none;
+  }
+
+  .section.active { display: block; }
+
+  .section-header {
+    margin-bottom: 32px;
+  }
+
+  .section-num {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .section-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 300;
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  .section-header p {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .section-divider {
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 32px;
+  }
+
+  /* ── FIELD GROUPS ── */
+  .field-group {
+    margin-bottom: 24px;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 520px) {
+    .field-row { grid-template-columns: 1fr; }
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    color: var(--gold-lt);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .hint {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="number"],
+  select,
+  textarea {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--off);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color var(--transition), background var(--transition);
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--gold);
+    background: var(--bg3);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--faint);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.6;
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  select option {
+    background: var(--bg2);
+    color: var(--off);
+  }
+
+  /* ── SERVICE CARDS ── */
+  .service-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  @media (max-width: 520px) {
+    .service-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  .service-card {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .service-card input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .service-card-inner {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 12px;
+    background: var(--bg2);
+    transition: border-color var(--transition), background var(--transition);
+    text-align: center;
+  }
+
+  .service-card input:checked + .service-card-inner {
+    border-color: var(--gold);
+    background: rgba(201, 168, 76, 0.08);
+  }
+
+  .service-card-icon {
+    font-size: 20px;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .service-card-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--off);
+    display: block;
+  }
+
+  .service-card input:checked + .service-card-inner .service-card-name {
+    color: var(--gold-lt);
+  }
+
+  /* ── RADIO GROUPS ── */
+  .radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .radio-option {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .radio-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .radio-label {
+    display: block;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--muted);
+    background: var(--bg2);
+    transition: all var(--transition);
+    cursor: pointer;
+  }
+
+  .radio-option input:checked + .radio-label {
+    border-color: var(--gold);
+    color: var(--gold-lt);
+    background: rgba(201, 168, 76, 0.08);
+  }
+
+  /* ── CONDITIONAL SECTIONS ── */
+  .conditional {
+    display: none;
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+
+  .conditional.visible { display: block; }
+
+  .conditional-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .conditional-header .tag {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--gold);
+    padding: 3px 10px;
+    border-radius: 3px;
+  }
+
+  .conditional-header h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--white);
+  }
+
+  /* ── NAVIGATION BUTTONS ── */
+  .nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 14px 32px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+
+  .btn-prev {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-prev:hover {
+    border-color: var(--faint);
+    color: var(--off);
+  }
+
+  .btn-next {
+    background: var(--gold);
+    color: var(--bg);
+  }
+
+  .btn-next:hover {
+    background: var(--gold-lt);
+  }
+
+  .btn-submit {
+    background: var(--gold);
+    color: var(--bg);
+    padding: 16px 40px;
+    font-size: 13px;
+  }
+
+  .btn-submit:hover { background: var(--gold-lt); }
+
+  .step-counter {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* ── VALIDATION ── */
+  .field-error {
+    font-size: 11px;
+    color: var(--error);
+    margin-top: 6px;
+    display: none;
+  }
+
+  .field-error.visible { display: block; }
+
+  input.invalid, textarea.invalid, select.invalid {
+    border-color: var(--error);
+  }
+
+  /* ── SUCCESS STATE ── */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 80px 24px;
+  }
+
+  .success-screen.visible { display: block; }
+
+  .success-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(76, 175, 130, 0.1);
+    border: 1px solid var(--success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    font-size: 24px;
+  }
+
+  .success-screen h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px;
+    font-weight: 300;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+
+  .success-screen p {
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* ── REQUIRED MARK ── */
+  .req { color: var(--gold); margin-left: 2px; }
+
+  /* ── FOOTER ── */
+  .form-footer {
+    text-align: center;
+    padding: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--faint);
+    font-size: 12px;
+    position: relative;
+    z-index: 1;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="logo-wrap">
+      <img src="https://www.mattstrohmmedia.com/images/logos/msm.png" alt="Matt Strohm Media">
+    </div>
+    <div class="header-eyebrow">Client Intake</div>
+    <h1>Tell me about your <em>project.</em></h1>
+    <p>Fill this in as fully as you can — it helps me prepare properly before our kickoff call. Takes about 20 minutes. Nothing here is set in stone.</p>
+  </div>
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <span class="progress-label" id="progressLabel">SECTION 1 OF 4</span>
+  </div>
+</div>
+
+<!-- FORM -->
+<div class="form-wrap">
+  <form id="intakeForm" novalidate>
+
+    <!-- ══ SECTION 1 — ABOUT YOU ══ -->
+    <div class="section active" data-section="1">
+      <div class="section-header">
+        <span class="section-num">Section 01</span>
+        <h2>About You</h2>
+        <p>The basics — who you are and how to reach you.</p>
+      </div>
+      <div class="section-divider"></div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Full Name <span class="req">*</span></label>
+          <input type="text" id="fullName" placeholder="Your full name" required>
+          <span class="field-error" id="fullName-error">Please enter your name</span>
+        </div>
+        <div class="field-group">
+          <label>Business / Trading Name</label>
+          <input type="text" id="businessName" placeholder="If applicable">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Email Address <span class="req">*</span></label>
+          <input type="email" id="email" placeholder="your@email.com" required>
+          <span class="field-error" id="email-error">Please enter a valid email</span>
+        </div>
+        <div class="field-group">
+          <label>Phone Number</label>
+          <input type="tel" id="phone" placeholder="+44 7700 000000">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Website</label>
+          <input type="url" id="website" placeholder="https://yoursite.com">
+        </div>
+        <div class="field-group">
+          <label>Industry / Sector</label>
+          <input type="text" id="industry" placeholder="e.g. Hospitality, Construction">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Where are you based? <span class="req">*</span></label>
+        <input type="text" id="location" placeholder="e.g. Aberdeen, Aberdeenshire, Edinburgh" required>
+        <span class="field-error" id="location-error">Please enter your location</span>
+      </div>
+
+      <div class="field-group">
+        <label>How did you hear about Matt Strohm Media?</label>
+        <div class="radio-group">
+          <label class="radio-option"><input type="radio" name="referral" value="Google"><span class="radio-label">Google</span></label>
+          <label class="radio-option"><input type="radio" name="referral" value="Instagram"><span class="radio-label">Instagram</span></label>
+          <label class="radio-option"><input type="radio" name="referral" value="Word of mouth"><span class="radio-label">Word of mouth</span></label>
+          <label class="radio-option"><input type="radio" name="referral" value="Returning client"><span class="radio-label">Returning client</span></label>
+          <label class="radio-option"><input type="radio" name="referral" value="Other"><span class="radio-label">Other</span></label>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <span></span>
+        <div style="display:flex;align-items:center;gap:16px">
+          <span class="step-counter" id="stepCounter1">1 / 4</span>
+          <button type="button" class="btn btn-next" onclick="nextSection(1)">Continue →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SECTION 2 — YOUR PROJECT ══ -->
+    <div class="section" data-section="2">
+      <div class="section-header">
+        <span class="section-num">Section 02</span>
+        <h2>Your Project</h2>
+        <p>What you need and what we're working towards.</p>
+      </div>
+      <div class="section-divider"></div>
+
+      <div class="field-group">
+        <label>Which services are you interested in? <span class="req">*</span><span class="hint">Select all that apply — you'll see tailored questions below.</span></label>
+        <div class="service-grid">
+          <label class="service-card">
+            <input type="checkbox" name="services" value="Photography" onchange="toggleConditional()">
+            <div class="service-card-inner">
+              <span class="service-card-icon">📷</span>
+              <span class="service-card-name">Photography</span>
+            </div>
+          </label>
+          <label class="service-card">
+            <input type="checkbox" name="services" value="Videography" onchange="toggleConditional()">
+            <div class="service-card-inner">
+              <span class="service-card-icon">🎬</span>
+              <span class="service-card-name">Videography</span>
+            </div>
+          </label>
+          <label class="service-card">
+            <input type="checkbox" name="services" value="Web Design" onchange="toggleConditional()">
+            <div class="service-card-inner">
+              <span class="service-card-icon">🌐</span>
+              <span class="service-card-name">Web Design</span>
+            </div>
+          </label>
+          <label class="service-card">
+            <input type="checkbox" name="services" value="Social Media" onchange="toggleConditional()">
+            <div class="service-card-inner">
+              <span class="service-card-icon">📱</span>
+              <span class="service-card-name">Social Media</span>
+            </div>
+          </label>
+          <label class="service-card">
+            <input type="checkbox" name="services" value="Meta Ads" onchange="toggleConditional()">
+            <div class="service-card-inner">
+              <span class="service-card-icon">📣</span>
+              <span class="service-card-name">Meta Ads</span>
+            </div>
+          </label>
+          <label class="service-card">
+            <input type="checkbox" name="services" value="AI Automation" onchange="toggleConditional()">
+            <div class="service-card-inner">
+              <span class="service-card-icon">⚡</span>
+              <span class="service-card-name">AI Automation</span>
+            </div>
+          </label>
+        </div>
+        <span class="field-error" id="services-error">Please select at least one service</span>
+      </div>
+
+      <div class="field-group">
+        <label>What are you hoping to achieve? <span class="req">*</span><span class="hint">What problem are you solving, or what outcome do you want?</span></label>
+        <textarea id="goal" placeholder="e.g. I want to launch a new website that generates enquiries, or I need wedding photos that capture the day properly..." required rows="4"></textarea>
+        <span class="field-error" id="goal-error">Please describe what you're looking for</span>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Approximate Budget<span class="hint">A rough range is fine. Helps me scope the right solution.</span></label>
+          <select id="budget">
+            <option value="" disabled selected>Select a range</option>
+            <option>Under £500</option>
+            <option>£500 – £1,000</option>
+            <option>£1,000 – £2,500</option>
+            <option>£2,500 – £5,000</option>
+            <option>£5,000 – £10,000</option>
+            <option>£10,000+</option>
+            <option>To be discussed</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Hard Deadline?<span class="hint">Leave blank if flexible.</span></label>
+          <input type="text" id="deadline" placeholder="e.g. End of June, 15 Aug, ASAP">
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="prevSection(2)">← Back</button>
+        <div style="display:flex;align-items:center;gap:16px">
+          <span class="step-counter">2 / 4</span>
+          <button type="button" class="btn btn-next" onclick="nextSection(2)">Continue →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SECTION 3 — YOUR BRAND ══ -->
+    <div class="section" data-section="3">
+      <div class="section-header">
+        <span class="section-num">Section 03</span>
+        <h2>Your Brand</h2>
+        <p>Helps me understand who you are before we speak.</p>
+      </div>
+      <div class="section-divider"></div>
+
+      <div class="field-group">
+        <label>In one sentence, what does your business do?</label>
+        <input type="text" id="businessDesc" placeholder="e.g. We renovate kitchens and bathrooms across Aberdeenshire">
+      </div>
+
+      <div class="field-group">
+        <label>Who is your ideal customer?<span class="hint">Age, location, interests — be as specific as you can.</span></label>
+        <textarea id="audience" placeholder="e.g. Homeowners aged 35–55 in Aberdeenshire looking to modernise their property..." rows="3"></textarea>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Three words that describe your brand</label>
+          <input type="text" id="brandWords" placeholder="e.g. Bold, Professional, Approachable">
+        </div>
+        <div class="field-group">
+          <label>What should your brand NOT look like?</label>
+          <input type="text" id="brandAvoid" placeholder="e.g. Cheap, corporate, cluttered">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Do you have an existing logo?</label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="hasLogo" value="Yes"><span class="radio-label">Yes</span></label>
+            <label class="radio-option"><input type="radio" name="hasLogo" value="No"><span class="radio-label">No</span></label>
+            <label class="radio-option"><input type="radio" name="hasLogo" value="In progress"><span class="radio-label">In progress</span></label>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Do you have brand guidelines?</label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="hasGuidelines" value="Yes"><span class="radio-label">Yes</span></label>
+            <label class="radio-option"><input type="radio" name="hasGuidelines" value="No"><span class="radio-label">No</span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Brand colours<span class="hint">Hex codes if known, or just describe them.</span></label>
+          <input type="text" id="brandColours" placeholder="e.g. #1a1a1a, navy blue, gold">
+        </div>
+        <div class="field-group">
+          <label>Brand fonts<span class="hint">If known.</span></label>
+          <input type="text" id="brandFonts" placeholder="e.g. Helvetica, Garamond">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Three brands or websites you admire — and why<span class="hint">Links or names. This shapes everything.</span></label>
+        <textarea id="references" placeholder="1. Apple — clean, minimal, premium feel&#10;2. ..." rows="4"></textarea>
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="prevSection(3)">← Back</button>
+        <div style="display:flex;align-items:center;gap:16px">
+          <span class="step-counter">3 / 4</span>
+          <button type="button" class="btn btn-next" onclick="nextSection(3)">Continue →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SECTION 4 — SERVICE DETAILS + SUBMIT ══ -->
+    <div class="section" data-section="4">
+      <div class="section-header">
+        <span class="section-num">Section 04</span>
+        <h2>Service Details</h2>
+        <p>Based on what you selected — answer what's relevant and skip the rest.</p>
+      </div>
+      <div class="section-divider"></div>
+
+      <!-- PHOTO / VIDEO -->
+      <div class="conditional" id="cond-media">
+        <div class="conditional-header">
+          <span class="tag">Photography & Video</span>
+          <h3>The Shoot</h3>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>Type of shoot</label>
+            <select id="shootType">
+              <option value="" disabled selected>Select type</option>
+              <option>Wedding</option>
+              <option>Event</option>
+              <option>Commercial / Brand</option>
+              <option>Portrait</option>
+              <option>Automotive</option>
+              <option>Drone / Aerial</option>
+              <option>Product</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Date(s) of shoot</label>
+            <input type="text" id="shootDate" placeholder="e.g. 14 Aug 2025, or flexible">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>Location(s)</label>
+            <input type="text" id="shootLocation" placeholder="Venue name or area">
+          </div>
+          <div class="field-group">
+            <label>Approx. number of people / subjects</label>
+            <input type="text" id="shootSubjects" placeholder="e.g. 2 people, 80 guests">
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Describe the mood or style you're after<span class="hint">e.g. cinematic, candid, editorial, moody, bright and natural</span></label>
+          <textarea id="shootMood" placeholder="What should the images/footage feel like?..." rows="3"></textarea>
+        </div>
+        <div class="field-group">
+          <label>What is the content for?</label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="shootUse" value="Website"><span class="radio-label">Website</span></label>
+            <label class="radio-option"><input type="radio" name="shootUse" value="Social media"><span class="radio-label">Social media</span></label>
+            <label class="radio-option"><input type="radio" name="shootUse" value="Ads"><span class="radio-label">Ads</span></label>
+            <label class="radio-option"><input type="radio" name="shootUse" value="Print"><span class="radio-label">Print</span></label>
+            <label class="radio-option"><input type="radio" name="shootUse" value="Personal"><span class="radio-label">Personal</span></label>
+            <label class="radio-option"><input type="radio" name="shootUse" value="All of the above"><span class="radio-label">All of the above</span></label>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Is drone footage needed?</label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="drone" value="Yes"><span class="radio-label">Yes</span></label>
+            <label class="radio-option"><input type="radio" name="drone" value="No"><span class="radio-label">No</span></label>
+            <label class="radio-option"><input type="radio" name="drone" value="Maybe"><span class="radio-label">Maybe</span></label>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Anything specific you want captured?<span class="hint">Shot list, key moments, must-haves.</span></label>
+          <textarea id="shotList" placeholder="Optional — even rough notes help..." rows="3"></textarea>
+        </div>
+      </div>
+
+      <!-- WEB DESIGN -->
+      <div class="conditional" id="cond-web">
+        <div class="conditional-header">
+          <span class="tag">Web Design</span>
+          <h3>The Site</h3>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>New site or rebuild?</label>
+            <div class="radio-group">
+              <label class="radio-option"><input type="radio" name="webType" value="New site"><span class="radio-label">Brand new</span></label>
+              <label class="radio-option"><input type="radio" name="webType" value="Rebuild"><span class="radio-label">Rebuild / redesign</span></label>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Current website (if any)</label>
+            <input type="url" id="currentSite" placeholder="https://...">
+          </div>
+        </div>
+        <div class="field-group">
+          <label>What is the #1 thing your website needs to do?</label>
+          <input type="text" id="webGoal" placeholder="e.g. Generate enquiries, sell products, showcase portfolio">
+        </div>
+        <div class="field-group">
+          <label>Pages you need<span class="hint">e.g. Home, About, Services, Portfolio, Contact, Shop</span></label>
+          <textarea id="webPages" placeholder="List the pages..." rows="2"></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>Who is writing the copy?</label>
+            <div class="radio-group">
+              <label class="radio-option"><input type="radio" name="webCopy" value="Me"><span class="radio-label">Me</span></label>
+              <label class="radio-option"><input type="radio" name="webCopy" value="You"><span class="radio-label">You (Matt)</span></label>
+              <label class="radio-option"><input type="radio" name="webCopy" value="To discuss"><span class="radio-label">To discuss</span></label>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Photography ready?</label>
+            <div class="radio-group">
+              <label class="radio-option"><input type="radio" name="webPhotos" value="Yes"><span class="radio-label">Yes</span></label>
+              <label class="radio-option"><input type="radio" name="webPhotos" value="Need a shoot"><span class="radio-label">Need a shoot</span></label>
+              <label class="radio-option"><input type="radio" name="webPhotos" value="Stock"><span class="radio-label">Use stock</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Any specific features needed?<span class="hint">e.g. booking system, online shop, Calendly integration, newsletter</span></label>
+          <textarea id="webFeatures" placeholder="List any features..." rows="2"></textarea>
+        </div>
+      </div>
+
+      <!-- SOCIAL MEDIA -->
+      <div class="conditional" id="cond-social">
+        <div class="conditional-header">
+          <span class="tag">Social Media</span>
+          <h3>The Platforms</h3>
+        </div>
+        <div class="field-group">
+          <label>Which platforms?</label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="socialPlatforms" value="Instagram"><span class="radio-label">Instagram</span></label>
+            <label class="radio-option"><input type="radio" name="socialPlatforms" value="Facebook"><span class="radio-label">Facebook</span></label>
+            <label class="radio-option"><input type="radio" name="socialPlatforms" value="TikTok"><span class="radio-label">TikTok</span></label>
+            <label class="radio-option"><input type="radio" name="socialPlatforms" value="LinkedIn"><span class="radio-label">LinkedIn</span></label>
+            <label class="radio-option"><input type="radio" name="socialPlatforms" value="Multiple"><span class="radio-label">Multiple</span></label>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>What does success look like?<span class="hint">More followers, leads, brand awareness, bookings — be specific.</span></label>
+          <textarea id="socialGoal" placeholder="e.g. 500 new followers in 3 months, 5 enquiries per month from Instagram..." rows="2"></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>Posting frequency you're after</label>
+            <input type="text" id="socialFreq" placeholder="e.g. 3x per week, daily stories">
+          </div>
+          <div class="field-group">
+            <label>Will you supply content?</label>
+            <div class="radio-group">
+              <label class="radio-option"><input type="radio" name="socialContent" value="Yes"><span class="radio-label">Yes</span></label>
+              <label class="radio-option"><input type="radio" name="socialContent" value="No"><span class="radio-label">No</span></label>
+              <label class="radio-option"><input type="radio" name="socialContent" value="Mix"><span class="radio-label">Mix</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- META ADS -->
+      <div class="conditional" id="cond-ads">
+        <div class="conditional-header">
+          <span class="tag">Meta Ads</span>
+          <h3>The Campaign</h3>
+        </div>
+        <div class="field-group">
+          <label>Primary goal</label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="adsGoal" value="Leads"><span class="radio-label">Leads</span></label>
+            <label class="radio-option"><input type="radio" name="adsGoal" value="Sales"><span class="radio-label">Sales</span></label>
+            <label class="radio-option"><input type="radio" name="adsGoal" value="Bookings"><span class="radio-label">Bookings</span></label>
+            <label class="radio-option"><input type="radio" name="adsGoal" value="Traffic"><span class="radio-label">Traffic</span></label>
+            <label class="radio-option"><input type="radio" name="adsGoal" value="Awareness"><span class="radio-label">Awareness</span></label>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>What are we promoting?<span class="hint">Specific product, service, offer — the more specific the better.</span></label>
+          <textarea id="adsOffer" placeholder="e.g. Kitchen renovation packages, starting from £8,000..." rows="2"></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>Monthly ad spend budget</label>
+            <select id="adsSpend">
+              <option value="" disabled selected>Select range</option>
+              <option>Under £300/mo</option>
+              <option>£300 – £600/mo</option>
+              <option>£600 – £1,200/mo</option>
+              <option>£1,200 – £3,000/mo</option>
+              <option>£3,000+/mo</option>
+              <option>To be discussed</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Run ads before?</label>
+            <div class="radio-group">
+              <label class="radio-option"><input type="radio" name="adsPrev" value="Yes"><span class="radio-label">Yes</span></label>
+              <label class="radio-option"><input type="radio" name="adsPrev" value="No"><span class="radio-label">No</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI AUTOMATION -->
+      <div class="conditional" id="cond-ai">
+        <div class="conditional-header">
+          <span class="tag">AI Automation</span>
+          <h3>The Process</h3>
+        </div>
+        <div class="field-group">
+          <label>Walk me through what you want to automate<span class="hint">What happens now, step by step — and what would you want to happen automatically?</span></label>
+          <textarea id="aiProcess" placeholder="e.g. Right now I manually copy enquiry emails into a spreadsheet, then write individual replies, then chase invoices manually. I want this to happen automatically..." rows="5"></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>How long does this take per week?</label>
+            <input type="text" id="aiTime" placeholder="e.g. 4–5 hours per week">
+          </div>
+          <div class="field-group">
+            <label>What tools do you currently use?</label>
+            <input type="text" id="aiTools" placeholder="e.g. Gmail, Notion, QuickBooks, Calendly">
+          </div>
+        </div>
+        <div class="field-group">
+          <label>What does 'done' look like to you?</label>
+          <textarea id="aiOutcome" placeholder="e.g. I want to save 4 hours a week and never miss a follow-up..." rows="2"></textarea>
+        </div>
+      </div>
+
+      <!-- ANYTHING ELSE -->
+      <div style="margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--border);">
+        <div class="field-group">
+          <label>Anything I should know before we speak?<span class="hint">Previous bad experiences, non-negotiables, constraints, context.</span></label>
+          <textarea id="extraNotes" placeholder="Optional but often the most useful thing I read..." rows="3"></textarea>
+        </div>
+        <div class="field-group">
+          <label>What does a great outcome look like in 6 months?</label>
+          <textarea id="successVision" placeholder="In 6 months, looking back — what would make this project a success?" rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="prevSection(4)">← Back</button>
+        <div style="display:flex;align-items:center;gap:16px">
+          <span class="step-counter">4 / 4</span>
+          <button type="button" class="btn btn-submit" onclick="submitForm()">Submit →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon">✓</div>
+      <h2>That's everything — thank you.</h2>
+      <p>I'll review this before our kickoff call so we can skip the basics and get straight into the good stuff. I'll be in touch shortly to confirm next steps.</p>
+      <br>
+      <p style="color: var(--gold); font-size: 13px;">matt@mattstrohmmedia.com · mattstrohmmedia.com</p>
+    </div>
+
+  </form>
+</div>
+
+<!-- FOOTER -->
+<div class="form-footer">
+  Matt Strohm Media · Aberdeen & Aberdeenshire · mattstrohmmedia.com
+</div>
+
+<script>
+  const TOTAL_SECTIONS = 4;
+  let currentSection = 1;
+
+  function updateProgress() {
+    const pct = ((currentSection - 1) / (TOTAL_SECTIONS - 1)) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = 'SECTION ' + currentSection + ' OF ' + TOTAL_SECTIONS;
+  }
+
+  function showSection(n) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    const target = document.querySelector('[data-section="' + n + '"]');
+    if (target) {
+      target.classList.add('active');
+      currentSection = n;
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function validateSection(n) {
+    let valid = true;
+    if (n === 1) {
+      const name = document.getElementById('fullName');
+      const email = document.getElementById('email');
+      const loc = document.getElementById('location');
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      [name, email, loc].forEach(f => { f.classList.remove('invalid'); });
+      ['fullName-error','email-error','location-error'].forEach(id => {
+        document.getElementById(id).classList.remove('visible');
+      });
+      if (!name.value.trim()) {
+        name.classList.add('invalid');
+        document.getElementById('fullName-error').classList.add('visible');
+        valid = false;
+      }
+      if (!emailRegex.test(email.value.trim())) {
+        email.classList.add('invalid');
+        document.getElementById('email-error').classList.add('visible');
+        valid = false;
+      }
+      if (!loc.value.trim()) {
+        loc.classList.add('invalid');
+        document.getElementById('location-error').classList.add('visible');
+        valid = false;
+      }
+    }
+    if (n === 2) {
+      const checked = document.querySelectorAll('input[name="services"]:checked');
+      const goal = document.getElementById('goal');
+      document.getElementById('services-error').classList.remove('visible');
+      document.getElementById('goal-error').classList.remove('visible');
+      goal.classList.remove('invalid');
+      if (checked.length === 0) {
+        document.getElementById('services-error').classList.add('visible');
+        valid = false;
+      }
+      if (!goal.value.trim()) {
+        goal.classList.add('invalid');
+        document.getElementById('goal-error').classList.add('visible');
+        valid = false;
+      }
+    }
+    return valid;
+  }
+
+  function nextSection(current) {
+    if (!validateSection(current)) return;
+    if (current < TOTAL_SECTIONS) showSection(current + 1);
+  }
+
+  function prevSection(current) {
+    if (current > 1) showSection(current - 1);
+  }
+
+  function toggleConditional() {
+    const checked = Array.from(document.querySelectorAll('input[name="services"]:checked')).map(c => c.value);
+    const hasMedia = checked.includes('Photography') || checked.includes('Videography');
+    document.getElementById('cond-media').classList.toggle('visible', hasMedia);
+    document.getElementById('cond-web').classList.toggle('visible', checked.includes('Web Design'));
+    document.getElementById('cond-social').classList.toggle('visible', checked.includes('Social Media'));
+    document.getElementById('cond-ads').classList.toggle('visible', checked.includes('Meta Ads'));
+    document.getElementById('cond-ai').classList.toggle('visible', checked.includes('AI Automation'));
+  }
+
+  async function submitForm() {
+    const btn = document.querySelector('.btn-submit');
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+
+    const services = Array.from(document.querySelectorAll('input[name="services"]:checked')).map(c => c.value);
+
+    const data = {
+      // Section 1 — About You
+      'Full Name':          document.getElementById('fullName').value,
+      'Business Name':      document.getElementById('businessName').value,
+      'Email':              document.getElementById('email').value,
+      'Phone':              document.getElementById('phone').value,
+      'Website':            document.getElementById('website').value,
+      'Industry':           document.getElementById('industry').value,
+      'Location':           document.getElementById('location').value,
+      'Heard About MSM':    document.querySelector('input[name="referral"]:checked')?.value || '',
+      // Section 2 — Project
+      'Services':           services.join(', '),
+      'Project Goal':       document.getElementById('goal').value,
+      'Budget':             document.getElementById('budget').value,
+      'Deadline':           document.getElementById('deadline').value,
+      // Section 3 — Brand
+      'What Business Does': document.getElementById('businessDesc').value,
+      'Ideal Customer':     document.getElementById('audience').value,
+      'Brand Words':        document.getElementById('brandWords').value,
+      'Brand Avoid':        document.getElementById('brandAvoid').value,
+      'Has Logo':           document.querySelector('input[name="hasLogo"]:checked')?.value || '',
+      'Has Guidelines':     document.querySelector('input[name="hasGuidelines"]:checked')?.value || '',
+      'Brand Colours':      document.getElementById('brandColours').value,
+      'Brand Fonts':        document.getElementById('brandFonts').value,
+      'References':         document.getElementById('references').value,
+      // Section 4 — Service details
+      'Shoot Type':         document.getElementById('shootType')?.value || '',
+      'Shoot Date':         document.getElementById('shootDate')?.value || '',
+      'Shoot Location':     document.getElementById('shootLocation')?.value || '',
+      'Shoot Subjects':     document.getElementById('shootSubjects')?.value || '',
+      'Shoot Mood':         document.getElementById('shootMood')?.value || '',
+      'Content Use':        document.querySelector('input[name="shootUse"]:checked')?.value || '',
+      'Drone Needed':       document.querySelector('input[name="drone"]:checked')?.value || '',
+      'Shot List':          document.getElementById('shotList')?.value || '',
+      'Web Type':           document.querySelector('input[name="webType"]:checked')?.value || '',
+      'Current Site':       document.getElementById('currentSite')?.value || '',
+      'Web Goal':           document.getElementById('webGoal')?.value || '',
+      'Web Pages':          document.getElementById('webPages')?.value || '',
+      'Web Copy':           document.querySelector('input[name="webCopy"]:checked')?.value || '',
+      'Web Photos':         document.querySelector('input[name="webPhotos"]:checked')?.value || '',
+      'Web Features':       document.getElementById('webFeatures')?.value || '',
+      'Social Platforms':   document.querySelector('input[name="socialPlatforms"]:checked')?.value || '',
+      'Social Goal':        document.getElementById('socialGoal')?.value || '',
+      'Social Frequency':   document.getElementById('socialFreq')?.value || '',
+      'Social Content':     document.querySelector('input[name="socialContent"]:checked')?.value || '',
+      'Ads Goal':           document.querySelector('input[name="adsGoal"]:checked')?.value || '',
+      'Ads Offer':          document.getElementById('adsOffer')?.value || '',
+      'Ads Spend':          document.getElementById('adsSpend')?.value || '',
+      'Ads Previous':       document.querySelector('input[name="adsPrev"]:checked')?.value || '',
+      'AI Process':         document.getElementById('aiProcess')?.value || '',
+      'AI Time Saved':      document.getElementById('aiTime')?.value || '',
+      'AI Tools':           document.getElementById('aiTools')?.value || '',
+      'AI Outcome':         document.getElementById('aiOutcome')?.value || '',
+      // Final
+      'Extra Notes':        document.getElementById('extraNotes').value,
+      'Success Vision':     document.getElementById('successVision').value,
+    };
+
+    try {
+      const res = await fetch('https://formspree.io/f/myklqkqd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById('progressFill').style.width = '100%';
+        document.getElementById('progressLabel').textContent = 'COMPLETE';
+        document.getElementById('successScreen').classList.add('visible');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        const json = await res.json();
+        btn.textContent = 'Submit →';
+        btn.disabled = false;
+        alert('Something went wrong: ' + (json?.errors?.[0]?.message || 'Please try again or email matt@mattstrohmmedia.com'));
+      }
+    } catch (err) {
+      btn.textContent = 'Submit →';
+      btn.disabled = false;
+      alert('Network error — please check your connection and try again.');
+    }
+  }
+
+  updateProgress();
+</script>
+
+</body>
+</html>
